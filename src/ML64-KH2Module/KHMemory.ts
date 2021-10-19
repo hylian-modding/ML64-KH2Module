@@ -1,17 +1,17 @@
 import IMemory from "modloader64_api/IMemory";
 import { IRomMemory } from "modloader64_api/IRomMemory";
-import { ProcessObject, readMemory, writeMemory, readBuffer, writeBuffer, ModuleObject} from 'memoryjs';
+import { ProcessObject, readMemory, writeMemory, readBuffer, writeBuffer, ModuleObject } from 'memoryjs';
 
-export class KHMemory implements IMemory, IRomMemory{
+export class KHMemory implements IMemory, IRomMemory {
 
     process!: ProcessObject
     module!: ModuleObject;
     fakeBack: Buffer = Buffer.alloc(1 * 1024 * 1024);
     baseAddr: number = 0;
 
-    setProcess(process: ProcessObject, module?: ModuleObject){
+    setProcess(process: ProcessObject, module?: ModuleObject) {
         this.process = process;
-        if (module !== undefined){
+        if (module !== undefined) {
             this.baseAddr = module.modBaseAddr;
         }
         global.ModLoader["KH2"] = {};
@@ -75,16 +75,19 @@ export class KHMemory implements IMemory, IRomMemory{
     rdramRead32(addr: number): number {
         return readMemory(this.process.handle, this.baseAddr + addr, 'uint32');
     }
-    rdramRead64(addr: number): bigint{
+    //@ts-ignore
+    rdramRead64(addr: number): bigint {
         return readMemory(this.process.handle, this.baseAddr + addr, 'uint64');
     }
-    rdramReadS64(addr: number): bigint{
+    //@ts-ignore
+    rdramReadS64(addr: number): bigint {
         return readMemory(this.process.handle, this.baseAddr + addr, 'int64');
     }
-    rdramWrite64(addr: number, value: bigint): void{
+    //@ts-ignore
+    rdramWrite64(addr: number, value: bigint): void {
         writeMemory(this.process.handle, this.baseAddr + addr, value, 'uint64');
     }
-    rdramWriteS64(addr: number, value: bigint): void{
+    rdramWriteS64(addr: number, value: bigint): void {
         writeMemory(this.process.handle, this.baseAddr + addr, value, 'int64');
     }
     rdramReadBuffer(addr: number, size: number): Buffer {

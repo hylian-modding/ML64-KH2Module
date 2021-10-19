@@ -13,11 +13,12 @@ import { getModules, ModuleObject, openProcess } from 'memoryjs';
 import { KHHeader } from "./KHHeader";
 import { KHMemory } from "./KHMemory";
 import path from 'path';
-import { ILogger } from "modloader64_api/IModLoaderAPI";
+import { IConfig, ILogger } from "modloader64_api/IModLoaderAPI";
 import IModule from "./IModule";
 import { IRomMemory } from "modloader64_api/IRomMemory";
 import { FakeRom } from 'modloader64_api/SidedProxy/FakeMemory';
 import { ProxySide } from "modloader64_api/SidedProxy/SidedProxy";
+import { IHiResTexture } from "modloader64_api/IHiResTexture";
 
 export class KHHook implements IConsole {
 
@@ -25,22 +26,27 @@ export class KHHook implements IConsole {
     lolMupen: any;
     modules: Map<string, IModule> = new Map<string, IModule>();
 
-    constructor(logger: ILogger, lobby: string) {
+    constructor(logger: ILogger, lobby: string, config: IConfig) {
         this.mem = new KHMemory();
         const processObject = openProcess('KINGDOM HEARTS II FINAL MIX.exe');
         this.mem.setProcess(processObject);
         // Sketchy shit
         let _md = require(path.resolve('./src/modloader/consoles/mupen/MupenDescriptor.js')).MupenDescriptor;
         let md: IConsoleDescriptor = new _md();
-        this.lolMupen = md.constructConsole(ProxySide.CLIENT, "./emulator/mupen64plus.v64", logger, lobby);
+        this.lolMupen = md.constructConsole(ProxySide.CLIENT, "./emulator/mupen64plus.v64", logger, lobby, config);
 
         getModules(processObject.th32ProcessID).forEach((value: ModuleObject)=>{
             let mem = new KHMemory();
             mem.setProcess(processObject, value);
+            //@ts-ignore
             this.modules.set(path.parse(value.szExePath).base, {memory: mem, size: value.modBaseSize, name: path.parse(value.szExePath).base});
         });
         logger.debug(`Generated ${this.modules.size} IMemory modules.`);
         Object.freeze(this.modules);
+    }
+    
+    getHiResTextureAccess(): IHiResTexture {
+        return {} as any;
     }
 
     getInternalPlugin(): string {
@@ -56,6 +62,7 @@ export class KHHook implements IConsole {
 
     startEmulator(preStartCallback: Function): IMemory {
         this.lolMupen.startEmulator(preStartCallback);
+        //@ts-ignore
         return this.mem;
     }
 
@@ -108,6 +115,7 @@ export class KHHook implements IConsole {
     }
 
     getMemoryAccess(): IMemory {
+        //@ts-ignore
         return this.mem;
     }
 
